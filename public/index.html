@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>Pokédex</title>
+  </head>
+  <body x-data="homepage()" x-init="init()">
+    <div class="bg-white">
+      <div
+        class="max-w-screen-xl mx-auto py-12 px-4 text-center sm:px-6 lg:px-8 lg:py-24"
+      >
+        <div class="space-y-8 sm:space-y-12">
+          <div
+            class="space-y-5 sm:mx-auto sm:max-w-xl sm:space-y-4 lg:max-w-5xl"
+          >
+            <h2
+              class="text-3xl leading-9 font-extrabold tracking-tight sm:text-4xl"
+            >
+              Pokédex
+            </h2>
+            <p class="text-xl leading-7 text-gray-500">
+              Built with
+              <a href="https://github.com/alpinejs/alpine">Alpine.js</a>.
+            </p>
+          </div>
+          <div class="sm:mx-auto sm:max-w-xl lg:max-w-2xl py-4">
+            <label for="search" class="sr-only">Search</label>
+            <div class="relative rounded-md shadow">
+              <input
+                id="search"
+                class="block h-10 w-full px-4 sm:text-sm sm:leading-5"
+                x-model="search"
+                placeholder="Search by name or type"
+              />
+            </div>
+          </div>
+          <ul
+            class="mx-auto grid grid-cols-2 col-gap-4 row-gap-8 sm:grid-cols-4 md:col-gap-6 lg:max-w-5xl lg:col-gap-8 lg:row-gap-12 xl:grid-cols-6"
+          >
+            <template x-for="pokemon in pokemons" :key="pokemon.id">
+              <li>
+                <div class="space-y-4">
+                  <img
+                    class="mx-auto h-20 w-20 rounded-full lg:w-24 lg:h-24"
+                    :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`"
+                    :alt="pokemon.name"
+                  />
+                  <div class="space-y-2">
+                    <div
+                      class="text-xs leading-4 font-medium lg:text-sm lg:leading-5"
+                    >
+                      <h4 class="mb-1" x-text="pokemon.name"></h4>
+                      <template x-for="type in pokemon.types" :key="type">
+                        <span
+                          x-text="type"
+                          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium leading-4 bg-gray-200 text-gray-800"
+                        ></span>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </template>
+          </ul>
+          <span class="inline-flex rounded-md shadow-sm">
+            <button
+              type="button"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition ease-in-out duration-150"
+              @click="showMore()"
+            >
+              Show More
+            </button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <script>
+      function homepage() {
+        return {
+          _items: [],
+          displayCount: 12,
+          search: '',
+          init() {
+            fetch('/pokemons.json')
+              .then((res) => res.text())
+              .then(JSON.parse)
+              .then((data) => {
+                this._items = data;
+              });
+          },
+          get pokemons() {
+            return this._items
+              .filter((p) => {
+                const pattern = new RegExp(this.search, 'i');
+                return (
+                  p.name.match(pattern) || p.types.some((t) => t.match(pattern))
+                );
+              })
+              .slice(0, this.displayCount);
+          },
+          showMore() {
+            this.displayCount += 12;
+          },
+        };
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.6.0/dist/alpine.min.js"></script>
+  </body>
+</html>
